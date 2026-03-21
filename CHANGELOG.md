@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.0.1] - 2026-03-21
+
+### Fixed
+- **Dispatch Hang on Stage Transitions** — All server-side dispatch fetch calls now have a 30-second `AbortSignal.timeout`. Previously, if the OpenClaw gateway was slow or unresponsive during testing/review/verification transitions, the PATCH request would hang indefinitely — potentially crashing the server. The timeout applies to all 10 dispatch call sites across the codebase. ([#84](https://github.com/crshdn/mission-control/issues/84))
+- **Stale OpenClaw Connection After Timeout** — Added `forceReconnect()` to the OpenClaw WebSocket client. When a dispatch fails (timeout or connection error), the client now tears down the stale WebSocket and clears all pending requests, so the next dispatch attempt gets a fresh connection instead of reusing a dead one.
+- **Stale Markdown in Agent Modal** — The Agent Modal now fetches fresh `soul_md`, `user_md`, and `agents_md` from the API each time it opens, instead of displaying cached data from the Zustand store that was loaded once at page load. ([#75](https://github.com/crshdn/mission-control/issues/75))
+
+### Improved
+- **Pre-Migration Database Backups** — Contributed by [@cgluttrell](https://github.com/cgluttrell). Before running any pending migrations, a timestamped backup is created using SQLite's `VACUUM INTO` (safe for WAL-mode databases). Keeps the last 5 backups. If backup fails, migrations abort entirely. ([PR #79](https://github.com/crshdn/mission-control/pull/79))
+- **Migration 013 Data Guard** — Contributed by [@cgluttrell](https://github.com/cgluttrell). The destructive "fresh start" migration now checks for existing tasks and locally-configured agents before running. Databases with real data are preserved instead of silently wiped on upgrade. ([PR #79](https://github.com/crshdn/mission-control/pull/79))
+- **Static Device Identity Path** — Contributed by [@org4lap](https://github.com/org4lap). Removed dynamic `filePath` parameter from `loadOrCreateDeviceIdentity()`, binding file operations to the module-level constant. Resolves TP1004 static analysis warning. ([PR #82](https://github.com/crshdn/mission-control/pull/82))
+
+---
+
 ## [2.0.0] - 2026-03-20
 
 ### 🚀 Product Autopilot — The World's First Autonomous Product Engine
@@ -415,6 +429,7 @@ This is the first stable, tested, and working release of Mission Control.
 
 ---
 
+[2.0.1]: https://github.com/crshdn/mission-control/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/crshdn/mission-control/compare/v1.5.3...v2.0.0
 [1.4.0]: https://github.com/crshdn/mission-control/compare/v1.3.1...v1.4.0
 [1.3.1]: https://github.com/crshdn/mission-control/releases/tag/v1.3.1

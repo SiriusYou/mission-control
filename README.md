@@ -28,7 +28,7 @@ I highly recommend getting Hetzner VPS to run this. <a href="https://hetzner.clo
   <a href="https://missioncontrol.ghray.com"><strong>🎮 Live Demo</strong></a> •
   <a href="#-quick-start">Quick Start</a> •
   <a href="#-docker">Docker</a> •
-  <a href="#-whats-new-in-v20">What's New</a> •
+  <a href="#-whats-new-in-v201">What's New</a> •
   <a href="#-features">Features</a> •
   <a href="#-how-it-works">How It Works</a> •
   <a href="#-configuration">Configuration</a> •
@@ -41,7 +41,17 @@ I highly recommend getting Hetzner VPS to run this. <a href="https://hetzner.clo
 
 ---
 
-## 🚀 What's New in v2.0
+## 🚀 What's New in v2.0.1
+
+### Patch: Stability & Community Contributions
+
+- **Dispatch hang fix** — All dispatch calls now have a 30s timeout. Previously, a slow OpenClaw gateway could hang the server indefinitely during stage transitions (testing/review/verification). Failed dispatches also force-reconnect the WebSocket so retries start fresh.
+- **Fresh markdown in Agent Modal** — The modal now fetches live data from the API instead of showing stale store cache.
+- **Pre-migration database backups** — Automatic timestamped backups before migrations using `VACUUM INTO`. Keeps last 5. ([@cgluttrell](https://github.com/cgluttrell))
+- **Migration 013 data guard** — The destructive "fresh start" migration now skips databases with existing data. ([@cgluttrell](https://github.com/cgluttrell))
+- **Static device identity path** — Removes dynamic filesystem path parameter. ([@org4lap](https://github.com/org4lap))
+
+### v2.0 Highlights
 
 Autensa v2 is a ground-up expansion from task orchestration dashboard to **the world's first autonomous product improvement engine**. It researches your market, generates feature ideas, lets you decide with a swipe, and builds them — automatically.
 
@@ -465,7 +475,7 @@ OPENCLAW_GATEWAY_TOKEN=your-shared-token
 
 ## 🗄 Database
 
-SQLite database auto-created at `./mission-control.db`. Migrations run automatically on startup (21 migrations for v2.0).
+SQLite database auto-created at `./mission-control.db`. Migrations run automatically on startup (21 migrations). As of v2.0.1, a timestamped backup is created before any pending migration runs.
 
 ```bash
 # Reset (start fresh)
