@@ -3,6 +3,7 @@ import { queryOne, queryAll, run, transaction } from '@/lib/db';
 import { broadcast } from '@/lib/events';
 import { getMissionControlUrl } from '@/lib/config';
 import { rebuildPreferenceModel } from './preferences';
+import { recalculateAndBroadcast } from './health-score';
 import type { Idea, Task, Product, SwipeHistoryEntry } from '@/lib/types';
 
 interface SwipeInput {
@@ -77,6 +78,11 @@ export function recordSwipe(productId: string, input: SwipeInput): { idea: Idea;
   // Rebuild preference model after each swipe (non-blocking)
   try { rebuildPreferenceModel(productId); } catch (err) {
     console.error('[Swipe] Failed to rebuild preferences:', err);
+  }
+
+  // Recalculate health score after swipe (non-blocking)
+  try { recalculateAndBroadcast(productId); } catch (err) {
+    console.error('[Swipe] Failed to recalculate health score:', err);
   }
 
   return result;

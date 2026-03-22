@@ -4,6 +4,7 @@ import { broadcast } from '@/lib/events';
 import { recordCostEvent } from '@/lib/costs/tracker';
 import { emitAutopilotActivity } from './activity';
 import { runIdeationCycle } from './ideation';
+import { recalculateAndBroadcast } from './health-score';
 import { completeJSON } from './llm';
 import type { Product, ResearchCycle } from '@/lib/types';
 
@@ -153,6 +154,11 @@ export async function runResearchCycle(productId: string, existingCycleId?: stri
 
       broadcast({ type: 'research_completed', payload: { productId, cycleId } });
       broadcast({ type: 'research_phase', payload: { productId, cycleId, phase: 'completed' } });
+
+      // Recalculate health score after research cycle completes
+      try { recalculateAndBroadcast(productId); } catch (err) {
+        console.error('[Research] Health score recalc failed:', err);
+      }
 
       console.log(`[Research] Cycle ${cycleId} completed successfully (tokens: ${usage.totalTokens})`);
 

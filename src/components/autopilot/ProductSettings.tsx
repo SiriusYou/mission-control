@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import { Save, Loader, ExternalLink } from 'lucide-react';
-import type { Product, BuildMode } from '@/lib/types';
+import { HealthWeightSliders } from './HealthWeightSliders';
+import type { Product, BuildMode, HealthWeightConfig } from '@/lib/types';
 
 interface Props {
   product: Product;
@@ -248,6 +249,16 @@ export function ProductSettings({ product, onSave }: Props) {
             />
           </div>
         </div>
+      </div>
+
+      {/* Health Score Weights */}
+      <div className="bg-mc-bg-secondary border border-mc-border rounded-lg p-4">
+        <HealthWeightSliders
+          productId={product.id}
+          initialWeights={product.health_weight_config ? (() => {
+            try { return JSON.parse(product.health_weight_config); } catch { return undefined; }
+          })() : undefined}
+        />
       </div>
 
       {/* Danger Zone */}

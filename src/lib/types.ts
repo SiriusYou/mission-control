@@ -446,8 +446,53 @@ export interface Product {
   default_branch?: string;
   cost_cap_per_task?: number;
   cost_cap_monthly?: number;
+  health_weight_config?: string; // JSON: HealthWeightConfig
   created_at: string;
   updated_at: string;
+}
+
+// Health Score types
+export type HealthComponent = 'research' | 'pipeline' | 'swipe' | 'build' | 'cost';
+
+export interface HealthWeightConfig {
+  research: number;
+  pipeline: number;
+  swipe: number;
+  build: number;
+  cost: number;
+  disabled: HealthComponent[];
+}
+
+export interface HealthComponentScore {
+  name: HealthComponent;
+  label: string;
+  score: number;
+  weight: number;
+  effectiveWeight: number;
+  rawValue: number;
+  unit: string;
+  description: string;
+}
+
+export interface ProductHealthScore {
+  id: string;
+  product_id: string;
+  overall_score: number;
+  research_freshness_score: number;
+  pipeline_depth_score: number;
+  swipe_velocity_score: number;
+  build_success_score: number;
+  cost_efficiency_score: number;
+  component_data?: string; // JSON: HealthComponentScore[]
+  snapshot_date?: string;
+  calculated_at: string;
+}
+
+export interface HealthScoreResponse {
+  score: ProductHealthScore;
+  components: HealthComponentScore[];
+  weights: HealthWeightConfig;
+  history: ProductHealthScore[];
 }
 
 export type ResearchCyclePhase = 'init' | 'llm_submitted' | 'llm_polling' | 'report_received' | 'completed';
@@ -730,7 +775,8 @@ export type SSEEventType =
   | 'note_delivered'
   | 'research_phase'
   | 'ideation_phase'
-  | 'autopilot_activity';
+  | 'autopilot_activity'
+  | 'health_score_updated';
 
 export interface SSEEvent {
   type: SSEEventType;

@@ -336,6 +336,7 @@ CREATE TABLE IF NOT EXISTS products (
   default_branch TEXT DEFAULT 'main',
   cost_cap_per_task REAL,
   cost_cap_monthly REAL,
+  health_weight_config TEXT,
   created_at TEXT DEFAULT (datetime('now')),
   updated_at TEXT DEFAULT (datetime('now'))
 );
@@ -621,6 +622,21 @@ CREATE TABLE IF NOT EXISTS task_notes (
   created_at TEXT DEFAULT (datetime('now'))
 );
 
+-- Product health scores: cached composite scores + daily snapshots
+CREATE TABLE IF NOT EXISTS product_health_scores (
+  id TEXT PRIMARY KEY,
+  product_id TEXT NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+  overall_score REAL NOT NULL DEFAULT 0,
+  research_freshness_score REAL DEFAULT 0,
+  pipeline_depth_score REAL DEFAULT 0,
+  swipe_velocity_score REAL DEFAULT 0,
+  build_success_score REAL DEFAULT 0,
+  cost_efficiency_score REAL DEFAULT 0,
+  component_data TEXT,
+  snapshot_date TEXT,
+  calculated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
 -- Indexes for performance
 CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status);
 CREATE INDEX IF NOT EXISTS idx_tasks_assigned ON tasks(assigned_agent_id);
@@ -671,4 +687,6 @@ CREATE INDEX IF NOT EXISTS idx_autopilot_activity_product ON autopilot_activity_
 CREATE INDEX IF NOT EXISTS idx_autopilot_activity_cycle ON autopilot_activity_log(cycle_id, created_at);
 CREATE INDEX IF NOT EXISTS idx_workspace_ports_active ON workspace_ports(status, port);
 CREATE INDEX IF NOT EXISTS idx_workspace_merges_task ON workspace_merges(task_id);
+CREATE INDEX IF NOT EXISTS idx_health_scores_product ON product_health_scores(product_id, calculated_at DESC);
+CREATE INDEX IF NOT EXISTS idx_health_scores_snapshot ON product_health_scores(product_id, snapshot_date);
 `;

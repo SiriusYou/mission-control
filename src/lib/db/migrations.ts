@@ -1354,6 +1354,41 @@ const migrations: Migration[] = [
 
       console.log('[Migration 021] Parallel build isolation tables and columns created');
     }
+  },
+  {
+    id: '022',
+    name: 'add_product_health_scores',
+    up: (db) => {
+      console.log('[Migration 022] Adding product health scores table and weight config...');
+
+      // Create product_health_scores table for cached scores + daily snapshots
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS product_health_scores (
+          id TEXT PRIMARY KEY,
+          product_id TEXT NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+          overall_score REAL NOT NULL DEFAULT 0,
+          research_freshness_score REAL DEFAULT 0,
+          pipeline_depth_score REAL DEFAULT 0,
+          swipe_velocity_score REAL DEFAULT 0,
+          build_success_score REAL DEFAULT 0,
+          cost_efficiency_score REAL DEFAULT 0,
+          component_data TEXT,
+          snapshot_date TEXT,
+          calculated_at TEXT NOT NULL DEFAULT (datetime('now'))
+        )
+      `);
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_health_scores_product ON product_health_scores(product_id, calculated_at DESC)`);
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_health_scores_snapshot ON product_health_scores(product_id, snapshot_date)`);
+
+      // Add health_weight_config JSON column to products table
+      const productsInfo = db.prepare("PRAGMA table_info(products)").all() as { name: string }[];
+      if (!productsInfo.some(col => col.name === 'health_weight_config')) {
+        db.exec(`ALTER TABLE products ADD COLUMN health_weight_config TEXT`);
+        console.log('[Migration 022] Added health_weight_config to products');
+      }
+
+      console.log('[Migration 022] Product health scores table and indexes created');
+    }
   }
 ];
 
